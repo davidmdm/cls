@@ -2,6 +2,8 @@
 
 const cls = require('./cls');
 
+const storage = cls.get('test');
+
 let i = 0;
 
 const logMemoryUsage = () => {
@@ -10,16 +12,10 @@ const logMemoryUsage = () => {
 };
 
 module.exports = function() {
-  return new Promise(resolve => {
-    cls.set('rand', Math.random());
-
-    i += 1;
-
-    if (i % 100 === 0) {
-      i = 0;
-      logMemoryUsage();
-    }
-
-    resolve();
-  }, 1000);
+  return new Promise(resolve =>
+    setTimeout(() => {
+      storage.set('rand', Math.random());
+      resolve();
+    }, 1000)
+  );
 };

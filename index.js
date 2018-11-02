@@ -2,7 +2,6 @@
 
 const async_hooks = require('async_hooks');
 const fs = require('fs');
-const cjson = require('circular-json');
 
 const idMap = new Map();
 const typeMap = new Map();
@@ -25,21 +24,13 @@ function init(asyncId, type, triggerAsyncId, resource) {
   inspect(asyncId, 'inspect');
 }
 
-function after(asyncId) {
-  inspect(asyncId, 'after');
-}
 function before(asyncId) {
   inspect(asyncId, 'before');
-}
-function destroy(asyncId) {
-  inspect(asyncId, 'destroy');
 }
 
 const asyncHook = async_hooks.createHook({
   init,
   before,
-  // after,
-  // destroy,
 });
 
 asyncHook.enable();
