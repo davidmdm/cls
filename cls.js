@@ -3,9 +3,27 @@
 const async_hooks = require('async_hooks');
 const namespaces = new Map();
 
-
 function createNamespace(name) {
+  if (namespaces.has(name)) {
+    throw new Error('namespace already exists: ' + name);
+  }
+
   const ctxMap = new Map();
+
+  function get(key) {
+    const ctx = ctxMap.get(async_hooks.executionAsyncId());
+    return ctx && ctx.get(key);
+  }
+
+  function set(key, value) {
+    const ctx = ctxMap.get(async_hooks.executionAsyncId());
+    return ctx && ctx.set(key, value);
+  }
+
+  function run(fn) {
+    ctxMap.set(async_hooks.executionAsyncId(), new Map());
+    fn();
+  }
 
   function init(asyncId, type, triggerAsyncId) {
     if (ctxMap.has(triggerAsyncId)) {
@@ -25,28 +43,17 @@ function createNamespace(name) {
   });
 
   asyncHook.enable();
-  ctxMap.set(async_hooks.executionAsyncId(), new Map());
 
-  function get(key) {
-    const ctx = ctxMap.get(async_hooks.executionAsyncId());
-    return ctx && ctx.get(key);
-  }
-
-  function set(key, value) {
-    const ctx = ctxMap.get(async_hooks.executionAsyncId());
-    return ctx && ctx.set(key, value);
-  }
-
-  const cls = { get, set };
+  const cls = { get, set, run };
 
   namespaces.set(name, cls);
 
   return cls;
 }
 
-const get = name => namespaces.get(name);
+const getNamespace = name => namespaces.get(name);
 
 module.exports = {
   createNamespace,
-  get,
+  getNamespace,
 };
